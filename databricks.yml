@@ -1,0 +1,18 @@
+# This is a Databricks asset bundle definition for MLB-data-engineer.
+# The Databricks extension requires databricks.yml configuration file.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+
+bundle:
+  name: MLB-data-engineer
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-55357501-eeb1.cloud.databricks.com
+
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-55357501-eeb1.cloud.databricks.com
