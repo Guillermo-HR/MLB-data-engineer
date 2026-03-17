@@ -31,8 +31,8 @@ jobs:
 
       - name: Deploy to DEV
         if: github.ref == 'refs/heads/develop'
-        run: databricks bundle deploy --target dev
+        run: python -m databricks bundle deploy --target dev
 
       - name: Deploy to PROD
         if: github.ref == 'refs/heads/main'
-        run: databricks bundle deploy --target prod
+        run: python -m databricks bundle deploy --target prod
