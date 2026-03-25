@@ -2,27 +2,16 @@ import requests
 import json
 from datetime import datetime, timezone
 from pyspark.sql import Row
-
 import sys
-import os
-
-add_directory = os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))
-)
-if add_directory not in sys.path:
-    sys.path.append(add_directory)
-from utils.config import Config
 
 # set environment
-dbutils.widgets.dropdown("entorno", "dev", ["dev", "prod"], "Selecciona el Entorno")
-env = dbutils.widgets.get("entorno")
+env='dev'
 print(f"Running on environment: {env}")
 
 # configurations
-def configurations():
-    Config.configure_spark(spark)
-    day = datetime.now().strftime("%m/%d/%Y")
-    url_V1 = Config.BASE_URL_V1
+def configurations(override_date=None):
+    day = override_date if override_date else datetime.now(timezone.utc).strftime("%m/%d/%Y")
+    url_V1 = 'https://statsapi.mlb.com/api/v1/'
     url = f'{url_V1}schedule?sportId=1&date={day}'
     bronze_schema = "mlb_{env}_bronze".format(env=env)
     table_schedule = f"{bronze_schema}.game_schedule"
@@ -77,8 +66,8 @@ def save_to_bronze(games_today, failed_responses, table_schedule, table_failed_g
         df_failed = spark.createDataFrame(failed_responses)
         df_failed.write.format("delta").mode("append").saveAsTable(table_failed_game_schedule)
 
-def main():
-    url, table_schedule, table_failed_game_schedule = configurations()
+def main(date_param=None):
+    url, table_schedule, table_failed_game_schedule = configurations(date_param)
     try:
         schedule = get_schedule(url)
         games_today, failed_responses = process_schedule(schedule)
@@ -92,6 +81,13 @@ def main():
             )
         )
     save_to_bronze(games_today, failed_responses, table_schedule, table_failed_game_schedule)
+    print(f'Games added: {len(games_today)}')
+    print(f'Failed games: {len(failed_responses)}')
     
 if __name__ == "__main__":
-    main()
+    try:
+        date_input = sys.argv[1] if len(sys.argv) > 1 else None
+    except:
+        date_input = None
+    main(date_input)
+    print("Finished")
