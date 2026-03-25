@@ -1,7 +1,6 @@
 # Seleccionar entorno de ejecución
-dbutils.widgets.dropdown("entorno", "dev", ["dev", "prod"], "Selecciona el Entorno")
-env = dbutils.widgets.get("entorno")
-print(f"Ejecutando pipeline en el entorno: {env}")
+env = 'prod'
+print(f"Running on enviroment: {env}")
 
 # Crear esquemas
 print("Crear esquemas para MLB")
