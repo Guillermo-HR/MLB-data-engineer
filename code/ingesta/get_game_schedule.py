@@ -13,7 +13,7 @@ def configurations(override_date=None):
     day = override_date if override_date else datetime.now(timezone.utc).strftime("%m/%d/%Y")
     url_V1 = 'https://statsapi.mlb.com/api/v1/'
     url = f'{url_V1}schedule?sportId=1&date={day}'
-    bronze_schema = "mlb_{env}_bronze".format(env=env)
+    bronze_schema = f'mlb_{env}_bronze'
     table_schedule = f"{bronze_schema}.game_schedule"
     table_failed_game_schedule = f"{bronze_schema}.failed_game_schedule"
     return url, table_schedule, table_failed_game_schedule
