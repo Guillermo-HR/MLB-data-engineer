@@ -37,7 +37,7 @@ def process_schedule(schedule):
             away_team = game['teams']['away']['team']['name']
             game_scheduled_time = game['gameDate']
             game_scheduled_time = datetime.strptime(game_scheduled_time, "%Y-%m-%dT%H:%M:%SZ")
-            status = 'registered'
+            status = game['status']['abstractGameCode']
             ingestion_time = datetime.now(timezone.utc)
             games_today.append(
                 Row(
