@@ -3,9 +3,12 @@ import json
 from datetime import datetime, timezone
 from pyspark.sql import Row
 import sys
+from dotenv import load_dotenv
+import os
 
 # set environment
-env='prod'
+load_dotenv()
+env = os.getenv('env')
 print(f"Running on environment: {env}")
 
 # configurations
