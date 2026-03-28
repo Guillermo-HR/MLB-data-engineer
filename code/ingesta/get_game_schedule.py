@@ -5,7 +5,7 @@ from pyspark.sql import Row
 import sys
 
 # set environment
-env='dev'
+env='prod'
 print(f"Running on environment: {env}")
 
 # configurations
