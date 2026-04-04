@@ -25,8 +25,7 @@ spark.sql(f"""CREATE TABLE IF NOT EXISTS mlb_prod_bronze.game_schedule (
         ) USING DELTA""")
 spark.sql(f"""CREATE TABLE IF NOT EXISTS mlb_prod_bronze.game_data (
         game_pk STRING,
-        game_data STRING,
-        all_plays STRING,
+        response STRING,
         ingestion_timestamp TIMESTAMP
         ) USING DELTA""")
 spark.sql(f"""CREATE TABLE IF NOT EXISTS mlb_prod_bronze.failed_game_schedule (
@@ -50,8 +49,7 @@ spark.sql(f"""CREATE TABLE IF NOT EXISTS mlb_dev_bronze.game_schedule (
         ) USING DELTA""")
 spark.sql(f"""CREATE TABLE IF NOT EXISTS mlb_dev_bronze.game_data (
         game_pk STRING,
-        game_data STRING,
-        all_plays STRING,
+        response STRING,
         ingestion_timestamp TIMESTAMP
         ) USING DELTA""")
 spark.sql(f"""CREATE TABLE IF NOT EXISTS mlb_dev_bronze.failed_game_schedule (
