@@ -1,5 +1,7 @@
 import requests
 import json
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 from datetime import datetime, timezone
 from pyspark.sql import Row
 import sys
@@ -31,16 +33,64 @@ def get_schedule(url):
         raise err
 
 def process_schedule(schedule):
+    expected_schema = {
+        "type": "object",
+        "properties": { 
+            "gamePk": {"type": "integer"},
+            "teams": {
+                "type": "object",
+                "properties": {
+                    "home": {
+                        "type": "object",
+                        "properties": {
+                            "team": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string"}
+                                },
+                                "required": ["name"]
+                            }
+                        },
+                        "required": ["team"]
+                    },
+                    "away": {
+                        "type": "object",
+                        "properties": {
+                            "team": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string"}
+                                },
+                                "required": ["name"]
+                            }
+                        },
+                        "required": ["team"]
+                    }
+                },
+                "required": ["home", "away"]
+            },
+            "gameDate": {"type": "string"},
+            "status": {
+                "type": "object",
+                "properties": {
+                    "abstractGameCode": {"type": "string"}
+                },
+                "required": ["abstractGameCode"]
+            }
+        },
+        "required": ["gamePk", "teams", "gameDate", "status"]
+    }
     games_today = []
     failed_responses = []
     for game in schedule:
         try:
+            validate(instance=game, schema=expected_schema)
             game_id = str(game['gamePk'])
-            home_team = game['teams']['home']['team']['name']
-            away_team = game['teams']['away']['team']['name']
-            game_scheduled_time = game['gameDate']
+            home_team = game.get('teams', {}).get('home', {}).get('team', {}).get('name', 'Unknown Home Team')
+            away_team = game.get('teams', {}).get('away', {}).get('team', {}).get('name', 'Unknown Away Team')
+            game_scheduled_time = game.get('gameDate')
             game_scheduled_time = datetime.strptime(game_scheduled_time, "%Y-%m-%dT%H:%M:%SZ")
-            status = game['status']['abstractGameCode']
+            status = game.get('status', {}).get('abstractGameCode')
             ingestion_time = datetime.now(timezone.utc)
             games_today.append(
                 Row(
@@ -52,10 +102,19 @@ def process_schedule(schedule):
                     ingestion_timestamp=ingestion_time
                 )
             )
+        except ValidationError as err:
+            failed_responses.append(
+                Row(
+                    response=json.dumps(game),
+                    error=f"Schema validation error: {str(err)}",
+                    ingestion_timestamp=datetime.now(timezone.utc)
+                )
+            )
         except Exception as e:
             failed_responses.append(
                 Row(
                     response=json.dumps(game),
+                    error=f"Unexpected error: {str(e)}",
                     ingestion_timestamp=datetime.now(timezone.utc)
                 )
             )
